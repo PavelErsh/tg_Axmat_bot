@@ -48,7 +48,7 @@ async def send_expenses(message: Message):
 async def process_send(callback_query: CallbackQuery):
     message_text = callback_query.message.text
 
-    # Разбиваем текст на строки
+    # Разбиваем текст на строк
     data = message_text.split('\n')
 
     # Создаем словарь для хранения данных
@@ -166,6 +166,7 @@ def get_daily_report(date):
     qr_revenue = 0
     cash_revenue = 0
     transfer_revenue = 0
+    post_revenue = 0
     instructors = set()
 
     for record in daily_records:
@@ -179,6 +180,8 @@ def get_daily_report(date):
                 cash_revenue += cost_value
             elif record['Вид оплаты'] == 'Перевод':
                 transfer_revenue += cost_value
+            elif record['Вид оплаты'] == 'Постоплата':
+                post_revenue += cost_value
             instructors.add(record['Инструктор'])
         else:
             print(f"Некорректное значение стоимости: {cost} в записи: {record}")
@@ -194,6 +197,8 @@ def get_daily_report(date):
         report += f"Наличка <b>{format_amount(cash_revenue)}</b>\n"
     if transfer_revenue > 0:
         report += f"Перевод <b>{format_amount(transfer_revenue)}</b>\n"
+    if post_revenue > 0:
+        report += f"Постоплата <b>{format_amount(post_revenue)}</b>\n"
     report += "\n"
     report += "Инструктора:\n"
     report += "\n".join(f"<b>{instructor}</b>" for instructor in instructors)
@@ -218,9 +223,9 @@ async def send_daily_report(bot):
 async def scheduler(bot):
     while True:
         now = datetime.now()
-        if now.hour == 18 and now.minute == 0:
+        if now.hour == 21 and now.minute == 0:
             await send_daily_report(bot)
-        if now.hour == 19 and now.minute == 0:
+        if now.hour == 22 and now.minute == 0:
             await send_expenses_miniapp("1129601494")
 
         await asyncio.sleep(60)
