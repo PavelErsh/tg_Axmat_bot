@@ -113,23 +113,34 @@ async def process_send(callback_query: CallbackQuery):
     sheet.append_row(other_data_row, value_input_option="USER_ENTERED")
 
     # Формируем финальное сообщение для пользователя
+    print("sent a message")
     formatted_message = (
         f"Дата: {formatted_date}\n"
-        f"Номер рейса: {data_dict.get('Номер рейса', '')}\n"
-        f"Инструктор: {data_dict.get('Инструктор', '')}\n"
-        f"Маршрут: {data_dict.get('Маршрут', '')}\n"
-        f"Техника: {data_dict.get('Машина', '')}\n"
-        f"Сумма предоплаты: {prepayment}\n"
-        f"Скидка: {data_dict.get('Скидка', '')}\n"
-        f"Предоплата: {data_dict.get('Предоплата', '')}\n"
-        f"Тип оплаты: {data_dict.get('Тип оплаты', '')}\n"
-        f"Источник клиента: {data_dict.get('Источник клиента', '')}\n"
-        f"Комментарий: {data_dict.get('Комментарий', '')}\n"
-        f"Стоимость: {cost}"
+        f"Номер рейса: {data_dict.get('Номер рейса', '')}\n\n"
+
+        f"Инструктор:\n{data_dict.get('Инструктор', '')}\n\n"
+
+        f"Маршрут:\n{data_dict.get('Маршрут', '')}\n\n"
+
+        f"Техника:\n{data_dict.get('Машина', '')} ₽ 💳\n\n"
+
+        f"Предоплата в размере: {prepayment} ₽ \n\n"
+
+        f"Размер скидки: {data_dict.get('Скидка', '')} ₽ \n\n"
+
+        f"Предоплата: {data_dict.get('Предоплата', '')} ₽ \n\n"
+
+        f"Тип оплаты: {data_dict.get('Тип оплаты', '')}\n\n"
+
+        f"Источник клиента: {data_dict.get('Источник клиента', '')}\n\n"
+
+        f"Комментарий: {data_dict.get('Комментарий', '')}\n\n"
+
+        f"Стоимость: {cost} ₽ "
     )
 
     # Отправляем сообщение пользователю
-    await callback_query.message.edit_text(f"Данные успешно отправлены в Google Таблицу!\n\n{formatted_message}")
+    await callback_query.message.edit_text(f"Вы внесли рейс ✅\n\n{formatted_message}")
 
 @router.callback_query(F.data == "delete")
 async def process_delete(callback_query: CallbackQuery):

@@ -93,13 +93,13 @@ ALLOWED_USERS = {
     "axm9t": "Запись рейсов",
     "Vladislav_Arkhipov": "Внести доход",
     "tokov17": "Качели",
-    "Q5fantan": "Внести доход",
+    "Q5fantan": "Запись рейсов",
     "Pavel_Er": "Внести доход"
 }
 
 # Словарь для URL кнопок
 BUTTON_URLS = {
-    "Запись рейсов": lambda user_id: f"https://flight-trip-axmat.ru/flight?user_id=702856294",
+    "Запись рейсов": lambda user_id: f"https://flight-trip-axmat.ru/flight?user_id=595186213",
     "Внести доход": lambda username: f"{WEB_APP_URL}bot_air_balon?username={username}",
     "Качели": lambda username: f"{WEB_APP_URL}bot_swing?username={username}"
 }
