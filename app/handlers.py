@@ -20,7 +20,7 @@ router = Router()
 # Инициализация Google Sheets
 try:
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("./app/credentials.json", scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name("../app/credentials.json", scope)
     client = gspread.authorize(creds)
     spreadsheet_id = "1-6f7th7KbGT7xsY5whhzbrUinwoOdDT6asqvMVAJBto"
     sheet = client.open_by_key(spreadsheet_id).sheet1
@@ -61,8 +61,8 @@ async def process_send(callback_query: CallbackQuery):
     # Преобразуем дату из формата "год-месяц-день" в "день-месяц-год"
     date_str = data_dict.get("Дата", "")
     try:
-        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
-        formatted_date = date_obj.strftime("%d-%m-%Y")
+        date_obj = datetime.strptime(date_str, "%Y.%m.%d")
+        formatted_date = date_obj.strftime("%d.%m.%Y")
     except ValueError:
         formatted_date = date_str
 
@@ -113,34 +113,36 @@ async def process_send(callback_query: CallbackQuery):
     sheet.append_row(other_data_row, value_input_option="USER_ENTERED")
 
     # Формируем финальное сообщение для пользователя
-    print("sent a message")
     formatted_message = (
+
         f"Дата: {formatted_date}\n"
         f"Номер рейса: {data_dict.get('Номер рейса', '')}\n\n"
 
-        f"Инструктор:\n{data_dict.get('Инструктор', '')}\n\n"
+        f"Инструктор:\n*{data_dict.get('Инструктор', '')}*\n\n"
 
-        f"Маршрут:\n{data_dict.get('Маршрут', '')}\n\n"
+        f"Маршрут:\n*{data_dict.get('Маршрут', '')}*\n\n"
 
-        f"Техника:\n{data_dict.get('Машина', '')} ₽ 💳\n\n"
+        f"Техника:\n*{data_dict.get('Машина', '')} - {cost} ₽*💳\n\n"
 
         f"Предоплата в размере: {prepayment} ₽ \n\n"
 
-        f"Размер скидки: {data_dict.get('Скидка', '')} ₽ \n\n"
+        f"Размер скидки {data_dict.get('Скидка', '')} ₽ \n\n"
 
-        f"Предоплата: {data_dict.get('Предоплата', '')} ₽ \n\n"
+        # f"Предоплата: {data_dict.get('Предоплата', '')} ₽ \n\n"
 
-        f"Тип оплаты: {data_dict.get('Тип оплаты', '')}\n\n"
+        # f"Тип оплаты: {data_dict.get('Тип оплаты', '')}\n\n"
 
-        f"Источник клиента: {data_dict.get('Источник клиента', '')}\n\n"
+        # f"Источник клиента: {data_dict.get('Источник клиента', '')}\n\n"
 
-        f"Комментарий: {data_dict.get('Комментарий', '')}\n\n"
+        # f"Комментарий: {data_dict.get('Комментарий', '')}\n\n"
 
-        f"Стоимость: {cost} ₽ "
+        f"Итоговая сумма {cost} ₽ "
     )
 
     # Отправляем сообщение пользователю
-    await callback_query.message.edit_text(f"Вы внесли рейс ✅\n\n{formatted_message}")
+    await callback_query.message.edit_text(f"Вы внесли рейс ✅\n\n{formatted_message}", parse_mode="MarkdownV2")
+
+
 
 @router.callback_query(F.data == "delete")
 async def process_delete(callback_query: CallbackQuery):
