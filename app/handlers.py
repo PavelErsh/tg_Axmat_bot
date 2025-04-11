@@ -20,7 +20,7 @@ router = Router()
 # Инициализация Google Sheets
 try:
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("C:/Users/ASUS/Desktop/Axmat/tg_Axmat_bot/app/credentials.json", scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name("../app/credentials.json", scope)
     client = gspread.authorize(creds)
     spreadsheet_id = "1-6f7th7KbGT7xsY5whhzbrUinwoOdDT6asqvMVAJBto"
     sheet = client.open_by_key(spreadsheet_id).sheet1
