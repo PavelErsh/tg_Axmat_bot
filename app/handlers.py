@@ -93,7 +93,7 @@ async def process_send(callback_query: CallbackQuery):
 
     # Формируем данные для Google Таблицы
     other_data_row = [
-        "",
+        "",   # Первая ячейка пуста, чтобы сдвинуть данные вправо
         current_flight_number,
         data_dict.get("Маршрут", ""),
         data_dict.get("Машина", ""),
