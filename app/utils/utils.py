@@ -99,7 +99,7 @@ ALLOWED_USERS = {
 
 # Словарь для URL кнопок
 BUTTON_URLS = {
-    "Запись рейсов": lambda user_id: f"https://flight-trip-axmat.ru/flight?user_id=595186213",
+    "Запись рейсов": lambda user_id: f"http://127.0.0.1:8000/flight?user_id==702856294",
     "Внести доход": lambda username: f"{WEB_APP_URL}bot_air_balon?username={username}",
     "Качели": lambda username: f"{WEB_APP_URL}bot_swing?username={username}"
 }
