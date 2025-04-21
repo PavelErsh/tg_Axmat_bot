@@ -1,7 +1,12 @@
 # /app/handlers.py
 
 # Сторонние модули
-from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import (
+    Message,
+    CallbackQuery,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+)
 from aiogram import Router, F
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
@@ -13,28 +18,37 @@ import asyncio
 
 # Собственные модули
 from app.tinkoff.utils import send_expenses_miniapp, send_auto_save_expenses_error
-from app.utils.utils import  get_income_keyboard, create_reply_markupButton
+from app.utils.utils import get_income_keyboard, create_reply_markupButton
 
 router = Router()
 
 # Инициализация Google Sheets
 try:
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("./app/credentials.json", scope)
+    scope = [
+        "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/drive",
+    ]
+    creds = ServiceAccountCredentials.from_json_keyfile_name(
+        "./app/credentials.json", scope
+    )
     client = gspread.authorize(creds)
     spreadsheet_id = "1-6f7th7KbGT7xsY5whhzbrUinwoOdDT6asqvMVAJBto"
     sheet = client.open_by_key(spreadsheet_id).sheet1
 except Exception as e:
     print(f"Ошибка при инициализации gspread: {str(e)}")
 
+
 @router.message(Command("start"))
 async def send_welcome(message: Message):
     """
     Обработка команды /start в боте
     """
-    print(f"Пришел новый пользователь: user_id: {message.from_user.id}  chat_id: {message.chat.id}")
+    print(
+        f"Пришел новый пользователь: user_id: {message.from_user.id}  chat_id: {message.chat.id}"
+    )
     await message.answer("Добро пожаловать! Доступ к боту открыт.")
     await get_income_keyboard(message)
+
 
 @router.message(Command("report"))
 async def send_expenses(message: Message):
@@ -61,8 +75,8 @@ async def process_send(callback_query: CallbackQuery):
     # Преобразуем дату из формата "год-месяц-день" в "день-месяц-год"
     date_str = data_dict.get("Дата", "")
     try:
-        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
-        formatted_date = date_obj.strftime("%d-%m-%Y")
+        date_obj = datetime.strptime(date_str, "%Y.%m.%d")
+        formatted_date = date_obj.strftime("%d.%m.%Y")
     except ValueError:
         formatted_date = date_str
 
@@ -107,43 +121,66 @@ async def process_send(callback_query: CallbackQuery):
 
     # Проверяем условие: текущий номер рейса равен 1, а предыдущий не равен 1
     if current_flight_number == "1" and previous_flight_number != "1":
-        sheet.append_row([formatted_date], value_input_option="USER_ENTERED")
+         sheet.append_row([formatted_date], value_input_option="USER_ENTERED")
 
-    # Записываем остальные данные в таблицу
+    # # Записываем остальные данные в таблицу
     sheet.append_row(other_data_row, value_input_option="USER_ENTERED")
 
     # Формируем финальное сообщение для пользователя
     formatted_message = (
+
         f"Дата: {formatted_date}\n"
-        f"Номер рейса: {data_dict.get('Номер рейса', '')}\n"
-        f"Инструктор: {data_dict.get('Инструктор', '')}\n"
-        f"Маршрут: {data_dict.get('Маршрут', '')}\n"
-        f"Техника: {data_dict.get('Машина', '')}\n"
-        f"Сумма предоплаты: {prepayment}\n"
-        f"Скидка: {data_dict.get('Скидка', '')}\n"
-        f"Предоплата: {data_dict.get('Предоплата', '')}\n"
-        f"Тип оплаты: {data_dict.get('Тип оплаты', '')}\n"
-        f"Источник клиента: {data_dict.get('Источник клиента', '')}\n"
-        f"Комментарий: {data_dict.get('Комментарий', '')}\n"
-        f"Стоимость: {cost}"
+        f"Номер рейса: {data_dict.get('Номер рейса', '')}\n\n"
+
+        f"Инструктор:\n*{data_dict.get('Инструктор', '')}*\n\n"
+
+        f"Маршрут:\n*{data_dict.get('Маршрут', '')}*\n\n"
+
+        f"Техника:\n*{data_dict.get('Машина', '')} - {cost} ₽*💳\n\n"
+
+        f"Предоплата в размере: {prepayment} ₽ \n\n"
+
+        f"Размер скидки {data_dict.get('Скидка', '')} ₽ \n\n"
+
+
+
+        f"Итоговая сумма {cost} ₽ "
     )
 
     # Отправляем сообщение пользователю
-    await callback_query.message.edit_text(f"Данные успешно отправлены в Google Таблицу!\n\n{formatted_message}")
+    await callback_query.message.edit_text(f"Вы внесли рейс ✅\n\n{formatted_message}", parse_mode="MarkdownV2")
+
 
 @router.callback_query(F.data == "delete")
 async def process_delete(callback_query: CallbackQuery):
     await callback_query.answer("Вы нажали кнопку 'Удалить'")
     await callback_query.message.delete()
 
+
 # Функция для форматирования даты
 def format_date(date_str):
     date_obj = datetime.strptime(date_str, "%d-%m-%Y")
-    return date_obj.strftime("%d %B").replace("January", "января").replace("February", "февраля").replace("March", "марта").replace("April", "апреля").replace("May", "мая").replace("June", "июня").replace("July", "июля").replace("August", "августа").replace("September", "сентября").replace("October", "октября").replace("November", "ноября").replace("December", "декабря")
+    return (
+        date_obj.strftime("%d %B")
+        .replace("January", "января")
+        .replace("February", "февраля")
+        .replace("March", "марта")
+        .replace("April", "апреля")
+        .replace("May", "мая")
+        .replace("June", "июня")
+        .replace("July", "июля")
+        .replace("August", "августа")
+        .replace("September", "сентября")
+        .replace("October", "октября")
+        .replace("November", "ноября")
+        .replace("December", "декабря")
+    )
+
 
 # Функция для форматирования суммы
 def format_amount(amount):
     return f"{amount:,} ₽".replace(",", " ")
+
 
 # Функция для получения отчёта за день
 def get_daily_report(date):
@@ -154,13 +191,13 @@ def get_daily_report(date):
     for record in records:
         if not any(record.values()):  # Проверка на полностью пустую строку
             break
-        if record['Дата'] == date:
+        if record["Дата"] == date:
             start_collecting = True
         if start_collecting:
             daily_records.append(record)
 
     if not daily_records:
-         return f"ПРОКАТ ТЕХНИКИ 🟢" + "\n" + "Отчёт за {date}" + "\n" + "Не работали❌"
+        return f"ПРОКАТ ТЕХНИКИ 🟢" + "\n" + "\n" + f"Отчёт за {date}" + "\n" + "\n" + "Не работали❌"
 
     total_revenue = 0
     qr_revenue = 0
@@ -170,19 +207,21 @@ def get_daily_report(date):
     instructors = set()
 
     for record in daily_records:
-        cost = record['Стоимость']
-        if isinstance(cost, int) or (isinstance(cost, str) and cost.replace(' ', '').isdigit()):
-            cost_value = int(cost.replace(' ', '')) if isinstance(cost, str) else cost
+        cost = record["Стоимость"]
+        if isinstance(cost, int) or (
+            isinstance(cost, str) and cost.replace(" ", "").isdigit()
+        ):
+            cost_value = int(cost.replace(" ", "")) if isinstance(cost, str) else cost
             total_revenue += cost_value
-            if record['Вид оплаты'] == 'QR':
+            if record["Вид оплаты"] == "QR":
                 qr_revenue += cost_value
-            elif record['Вид оплаты'] == 'Наличка':
+            elif record["Вид оплаты"] == "Наличка":
                 cash_revenue += cost_value
-            elif record['Вид оплаты'] == 'Перевод':
+            elif record["Вид оплаты"] == "Перевод":
                 transfer_revenue += cost_value
-            elif record['Вид оплаты'] == 'Постоплата':
+            elif record["Вид оплаты"] == "Постоплата":
                 post_revenue += cost_value
-            instructors.add(record['Инструктор'])
+            instructors.add(record["Инструктор"])
         else:
             print(f"Некорректное значение стоимости: {cost} в записи: {record}")
 
@@ -205,34 +244,40 @@ def get_daily_report(date):
 
     return report
 
+
 # Функция для отправки отчёта по chat_id
 async def send_daily_report(bot):
     today = (datetime.now() - timedelta(days=0)).strftime("%d-%m-%Y")
     report = get_daily_report(today)
 
     # Жестко заданные chat_id пользователей
-    chat_ids = [1129601494, 702856294]
+    chat_ids = [1129601494, 702856294, 429567381]
 
     for chat_id in chat_ids:
         try:
-            await bot.send_message(chat_id=chat_id, text=report, parse_mode=ParseMode.HTML)
+            await bot.send_message(
+                chat_id=chat_id, text=report, parse_mode=ParseMode.HTML
+            )
         except Exception as e:
             print(f"Ошибка при отправке сообщения: {e}")
+
 
 # Планирование отправки отчёта каждый день в определённое время
 async def scheduler(bot):
     while True:
         now = datetime.now()
-        if now.hour == 21 and now.minute == 0:
+        if now.hour == 21 and now.minute == 46:
             await send_daily_report(bot)
         if now.hour == 22 and now.minute == 0:
             await send_expenses_miniapp("1129601494")
 
         await asyncio.sleep(60)
 
+
 # Запуск бота и планировщика
 async def main_scheduler(bot):
     asyncio.create_task(scheduler(bot))
+
 
 @router.message(F.text == "Внести доход")
 async def reply_keyboard(message: Message):
